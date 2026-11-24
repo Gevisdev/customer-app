@@ -96,7 +96,6 @@
     <!-- Main Content -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
       
-      <!-- Pending Payment Banner -->
       <div id="pendingPaymentBanner" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-4 shadow-sm flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
            <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i>
@@ -104,7 +103,6 @@
         </div>
       </div>
 
-      <!-- KPI Strip -->
       <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-xs">
           <div class="text-slate-500 text-xs font-medium mb-1">Total Customers</div>
@@ -124,7 +122,6 @@
         </div>
       </section>
 
-      <!-- Search & Filter -->
       <section class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs">
         <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           <div class="relative flex-1">
@@ -144,10 +141,8 @@
         </div>
       </section>
 
-      <!-- Cards Grid -->
       <section id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></section>
 
-      <!-- Empty State -->
       <section id="emptyState" class="hidden bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center">
         <i data-lucide="folder-search" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
         <h2 class="text-base font-semibold text-slate-900 mb-1">No customers found</h2>
@@ -162,7 +157,6 @@
 
   <!-- ================= MODALS ================= -->
 
-  <!-- Add/Edit Customer Modal -->
   <div id="customerModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden">
       <div class="px-5 py-4 border-b flex justify-between bg-slate-50">
@@ -242,7 +236,6 @@
     </div>
   </div>
 
-  <!-- Upgrade / Payment Modal -->
   <div id="upgradeModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
       <div class="px-5 py-4 border-b bg-gradient-to-r from-amber-500 to-orange-500 flex justify-between items-center">
@@ -299,19 +292,17 @@
     </div>
   </div>
 
-  <!-- Toast -->
   <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2">
     <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
     <span id="toastMessage">Saved</span>
   </div>
 
-  <!-- App Logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
     // --- 1. SETUP ---
-    // Yahan maine URL aur KEY pehle se sahi daal diya hai
-    const SUPABASE_URL = 'https://nnyigvvszfsnkevffdoi.supabase.co';
+    // Yahan maine aapka exact URL daal diya hai
+    const SUPABASE_URL = 'https://nnylgvvszfsnkevffdoi.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ueWxndnZzemZzbmtldmZmZG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1Mzk2OTYsImV4cCI6MjExMTExNTY5Nn0.ZmaPpZ-CGnlAnvmeEPpLGvz7N8Nw7WHSxReZfVtb7oI';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
