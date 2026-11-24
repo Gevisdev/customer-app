@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; color: #0f172a; }
-    .modal-backdrop { background-color: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2px); }
+    .modal-backdrop { background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(3px); }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
     .hidden { display: none !important; }
@@ -76,6 +76,12 @@
         <div class="flex items-center gap-2">
           <button id="upgradeBtn" class="hidden relative inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg hover:from-amber-600 hover:to-orange-600 shadow-sm cursor-pointer">
             <i data-lucide="crown" class="w-4 h-4"></i> Upgrade
+          </button>
+
+          <button id="exportCsvBtn" type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 cursor-pointer">
+            <i data-lucide="download" class="w-4 h-4 text-slate-500"></i>
+            <span class="hidden sm:inline">Export CSV</span>
           </button>
           
           <button id="logoutBtn" type="button" title="Logout"
@@ -157,6 +163,7 @@
 
   <!-- ================= MODALS ================= -->
 
+  <!-- Add/Edit Customer Modal -->
   <div id="customerModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden">
       <div class="px-5 py-4 border-b flex justify-between bg-slate-50">
@@ -166,26 +173,51 @@
       
       <form id="customerForm" class="p-5 overflow-y-auto space-y-4">
         <input type="hidden" id="customerId" />
+        <input type="hidden" id="fieldPhotoUrl" />
         
+        <!-- Photo Upload Section -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center gap-4">
+          <div id="photoPreview" class="w-16 h-16 rounded-lg bg-white border border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+            <i data-lucide="camera" class="w-6 h-6 text-slate-400"></i>
+          </div>
+          <div class="flex-1">
+            <p class="text-xs font-semibold text-slate-700">Customer / Machine Photo</p>
+            <div class="flex gap-2 mt-2">
+              <label class="cursor-pointer bg-indigo-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-indigo-700">
+                <i data-lucide="camera" class="w-3 h-3 inline mr-1"></i> Take Photo
+                <input type="file" id="photoCamera" accept="image/*" capture="environment" class="hidden" />
+              </label>
+              <label class="cursor-pointer bg-white border border-slate-300 text-slate-700 px-3 py-1 rounded text-xs font-semibold hover:bg-slate-50">
+                Upload
+                <input type="file" id="photoUpload" accept="image/*" class="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Customer Name *</label>
             <input id="fieldName" type="text" required class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Contact Number *</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Primary Contact *</label>
             <input id="fieldContact" type="tel" required class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Alternative Contact</label>
+            <input id="fieldAltContact" type="tel" class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Company GST</label>
             <input id="fieldGst" type="text" class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 uppercase" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Currently Using Machine *</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Current Machine *</label>
             <input id="fieldUsing" type="text" required class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Model</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Machine Model</label>
             <input id="fieldModel" type="text" class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
@@ -236,77 +268,60 @@
     </div>
   </div>
 
+  <!-- Upgrade Modal -->
   <div id="upgradeModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
       <div class="px-5 py-4 border-b bg-gradient-to-r from-amber-500 to-orange-500 flex justify-between items-center">
         <h2 class="text-base font-bold text-white flex items-center gap-2"><i data-lucide="crown" class="w-5 h-5"></i> Upgrade to Premium</h2>
         <button type="button" onclick="closeUpgradeModal()" class="text-white/80 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      
       <div class="p-5 max-h-[80vh] overflow-y-auto space-y-4">
         <div class="text-center bg-slate-50 p-4 rounded-xl border">
           <p class="text-sm text-slate-600">Premium Plan</p>
           <p class="text-3xl font-bold text-slate-900">₹500<span class="text-sm font-normal text-slate-500">/month</span></p>
-          <ul class="text-xs text-slate-600 mt-2 space-y-1 text-left inline-block">
-            <li class="flex items-center gap-1"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> Unlimited Customers</li>
-            <li class="flex items-center gap-1"><i data-lucide="check" class="w-3 h-3 text-emerald-500"></i> All features unlocked</li>
-          </ul>
         </div>
-
         <div class="border border-indigo-100 bg-indigo-50/50 p-4 rounded-xl text-center space-y-2">
           <p class="text-xs font-semibold text-indigo-900">Pay using any UPI App</p>
           <div class="bg-white p-2 rounded-lg inline-block shadow-sm">
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=yourname@upi" alt="UPI QR" class="w-32 h-32 mx-auto" />
           </div>
           <p id="displayUpi" class="text-sm font-mono font-bold text-slate-800 bg-white border px-3 py-1.5 rounded-lg inline-block">yourname@upi</p>
-          <p class="text-[11px] text-slate-500">Scan or pay to the UPI ID above</p>
         </div>
-
         <form id="paymentForm" class="space-y-3">
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">UTR / Transaction ID (12 digits) *</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">UTR / Transaction ID *</label>
             <input id="payUtr" type="text" required maxlength="12" pattern="\d{12}" placeholder="e.g. 123456789012" class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono" />
           </div>
           <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Amount (₹) *</label>
-              <input id="payAmount" type="number" required value="500" class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Date *</label>
-              <input id="payDate" type="date" required class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500" />
-            </div>
+            <div><label class="block text-xs font-semibold text-slate-700 mb-1">Amount (₹) *</label><input id="payAmount" type="number" required value="500" class="w-full px-3 py-2 text-sm border rounded-lg" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 mb-1">Date *</label><input id="payDate" type="date" required class="w-full px-3 py-2 text-sm border rounded-lg" /></div>
           </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Payment Screenshot *</label>
-            <input id="payScreenshot" type="file" accept="image/*" required class="w-full px-3 py-2 text-sm border rounded-lg file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
-          </div>
-          
+          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Payment Screenshot *</label><input id="payScreenshot" type="file" accept="image/*" required class="w-full px-3 py-2 text-sm border rounded-lg" /></div>
           <div id="payError" class="hidden text-xs text-rose-600 bg-rose-50 p-2 rounded border border-rose-200"></div>
-
-          <button type="submit" id="paySubmitBtn" class="w-full py-2.5 text-sm font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 mt-2">
-            Submit Payment for Approval
-          </button>
+          <button type="submit" id="paySubmitBtn" class="w-full py-2.5 text-sm font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 mt-2">Submit Payment</button>
         </form>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2">
-    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-    <span id="toastMessage">Saved</span>
+  <!-- Image Modal -->
+  <div id="imageModal" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden">
+      <div class="p-3 border-b flex justify-between bg-slate-50">
+        <span class="font-bold text-sm">Customer Photo</span>
+        <button onclick="document.getElementById('imageModal').classList.add('hidden')" class="text-slate-500 hover:text-slate-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <img id="modalImage" src="" class="w-full h-auto max-h-[75vh] object-contain bg-slate-900" />
+    </div>
   </div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-    // --- 1. SETUP ---
-    // Yahan maine aapka exact URL daal diya hai
     const SUPABASE_URL = 'https://nnylgvvszfsnkevffdoi.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ueWxndnZzemZzbmtldmZmZG9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1Mzk2OTYsImV4cCI6MjExMTExNTY5Nn0.ZmaPpZ-CGnlAnvmeEPpLGvz7N8Nw7WHSxReZfVtb7oI';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // --- STATE ---
     let currentUser = null;
     let userProfile = null;
     let customers = [];
@@ -315,17 +330,13 @@
 
     lucide.createIcons();
 
-    // --- 2. AUTHENTICATION ---
+    // AUTH LOGIC
     const authForm = document.getElementById('authForm');
-    const authToggleBtn = document.getElementById('authToggleBtn');
-    const authToggleText = document.getElementById('authToggleText');
-    const authSubmitBtn = document.getElementById('authSubmitBtn');
-    
-    authToggleBtn.addEventListener('click', () => {
+    document.getElementById('authToggleBtn').addEventListener('click', () => {
       isLoginMode = !isLoginMode;
-      authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
-      authToggleText.textContent = isLoginMode ? "Don't have an account?" : "Already have an account?";
-      authToggleBtn.textContent = isLoginMode ? 'Sign Up' : 'Sign In';
+      document.getElementById('authSubmitBtn').textContent = isLoginMode ? 'Sign In' : 'Sign Up';
+      document.getElementById('authToggleText').textContent = isLoginMode ? "Don't have an account?" : "Already have an account?";
+      document.getElementById('authToggleBtn').textContent = isLoginMode ? 'Sign Up' : 'Sign In';
       document.getElementById('authError').classList.add('hidden');
       document.getElementById('authSuccess').classList.add('hidden');
     });
@@ -336,11 +347,10 @@
       const password = document.getElementById('authPassword').value;
       const errEl = document.getElementById('authError');
       const sucEl = document.getElementById('authSuccess');
+      const btn = document.getElementById('authSubmitBtn');
       
-      errEl.classList.add('hidden');
-      sucEl.classList.add('hidden');
-      authSubmitBtn.disabled = true;
-      authSubmitBtn.textContent = 'Please wait...';
+      errEl.classList.add('hidden'); sucEl.classList.add('hidden');
+      btn.disabled = true; btn.textContent = 'Please wait...';
 
       try {
         if (isLoginMode) {
@@ -349,22 +359,15 @@
         } else {
           const { data, error } = await supabase.auth.signUp({ email, password });
           if (error) throw error;
-          
           if (data.user && data.session === null) {
-             sucEl.textContent = 'Account created! Please check your email inbox to confirm your address before logging in.';
+             sucEl.textContent = 'Account created! Please check your email to verify before logging in.';
              sucEl.classList.remove('hidden');
              authForm.reset();
-          } else {
-             checkSession();
-          }
+          } else { checkSession(); }
         }
       } catch (error) {
-        errEl.textContent = error.message;
-        errEl.classList.remove('hidden');
-      } finally {
-        authSubmitBtn.disabled = false;
-        authSubmitBtn.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
-      }
+        errEl.textContent = error.message; errEl.classList.remove('hidden');
+      } finally { btn.disabled = false; btn.textContent = isLoginMode ? 'Sign In' : 'Sign Up'; }
     });
 
     async function checkSession() {
@@ -383,28 +386,16 @@
       }
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        currentUser = null;
-        userProfile = null;
-        document.getElementById('authScreen').classList.remove('hidden');
-        document.getElementById('mainApp').classList.add('hidden');
-      } else if (event === 'SIGNED_IN') {
-        checkSession();
-      }
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') { window.location.reload(); }
+      else if (event === 'SIGNED_IN') { checkSession(); }
     });
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-    });
+    document.getElementById('logoutBtn').addEventListener('click', async () => { await supabase.auth.signOut(); });
 
-    // --- 3. DATA LOADING ---
     async function loadProfile() {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
-      if (data) {
-        userProfile = data;
-        updatePlanUI();
-      }
+      const { data } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+      if (data) { userProfile = data; updatePlanUI(); }
     }
 
     async function loadSettings() {
@@ -421,10 +412,8 @@
     function updatePlanUI() {
       const planEl = document.getElementById('userPlanDisplay');
       const upgradeBtn = document.getElementById('upgradeBtn');
-      
       if (userProfile.plan === 'premium') {
-        const until = new Date(userProfile.premium_until).toLocaleDateString();
-        planEl.innerHTML = `<span class="text-emerald-600 font-bold">Premium</span> (until ${until})`;
+        planEl.innerHTML = `<span class="text-emerald-600 font-bold">Premium</span> (until ${new Date(userProfile.premium_until).toLocaleDateString()})`;
         upgradeBtn.classList.add('hidden');
       } else {
         planEl.textContent = `Free Plan (Max ${freeLimit} customers)`;
@@ -433,23 +422,17 @@
     }
 
     async function loadCustomers() {
-      const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
-      if (data) {
-        customers = data;
-        render();
-      }
+      const { data } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+      if (data) { customers = data; render(); }
     }
 
     async function checkPendingPayment() {
       const { data } = await supabase.from('payments').select('*').eq('user_id', currentUser.id).eq('status', 'pending').limit(1);
-      if (data && data.length > 0) {
-        document.getElementById('pendingPaymentBanner').classList.remove('hidden');
-      } else {
-        document.getElementById('pendingPaymentBanner').classList.add('hidden');
-      }
+      if (data && data.length > 0) document.getElementById('pendingPaymentBanner').classList.remove('hidden');
+      else document.getElementById('pendingPaymentBanner').classList.add('hidden');
     }
 
-    // --- 4. UI RENDERING ---
+    // RENDER UI
     function render() {
       const q = document.getElementById('searchInput').value.toLowerCase();
       const priority = document.getElementById('priorityFilter').value;
@@ -457,7 +440,7 @@
       const filtered = customers.filter(c => {
         if (priority !== 'all' && c.priority !== priority) return false;
         if (!q) return true;
-        return (c.name + c.contact + (c.gst||'') + c.currently_using + (c.model||'')).toLowerCase().includes(q);
+        return (c.name + c.contact + (c.alt_contact||'') + (c.gst||'') + c.currently_using + (c.model||'')).toLowerCase().includes(q);
       });
 
       document.getElementById('kpiTotalCustomers').textContent = customers.length;
@@ -469,21 +452,23 @@
       const empty = document.getElementById('emptyState');
 
       if (filtered.length === 0) {
-        container.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
+        container.innerHTML = ''; empty.classList.remove('hidden'); return;
       }
       empty.classList.add('hidden');
 
       container.innerHTML = filtered.map(c => `
-        <article class="bg-white rounded-xl border ${c.has_requirement ? 'border-emerald-400' : 'border-slate-200'} p-4 shadow-sm flex flex-col justify-between gap-3">
+        <article class="bg-white rounded-xl border ${c.has_requirement ? 'border-emerald-400' : 'border-slate-200'} p-4 shadow-sm flex flex-col justify-between gap-3 hover:shadow-md transition">
           <div class="space-y-3">
             <div class="flex justify-between items-start">
-               <div>
-                 <h3 class="text-base font-bold text-slate-900">${c.name}</h3>
-                 <p class="text-xs text-indigo-600 font-medium">${c.designation || 'No designation'}</p>
+               <div class="flex items-center gap-3">
+                 ${c.photo_url 
+                   ? `<button onclick="window.viewImage('${c.photo_url}')" class="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 shrink-0"><img src="${c.photo_url}" class="w-full h-full object-cover" /></button>`
+                   : `<div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center font-bold text-lg shrink-0">${c.name.charAt(0).toUpperCase()}</div>`}
+                 <div>
+                   <h3 class="text-base font-bold text-slate-900">${c.name}</h3>
+                   <span class="px-2 py-0.5 mt-1 inline-block bg-amber-50 text-amber-700 text-[10px] font-bold rounded border border-amber-200 uppercase tracking-wide">${c.hp} HP • ${c.priority}</span>
+                 </div>
                </div>
-               <span class="px-2 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-lg border border-amber-200">${c.hp} HP</span>
             </div>
             
             <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-1 text-xs">
@@ -493,20 +478,21 @@
 
             ${c.has_requirement ? `
               <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-200 text-xs">
-                <span class="font-bold text-emerald-800">Requirement:</span> ${c.requirement_item}
+                <span class="font-bold text-emerald-800">Req:</span> ${c.requirement_item}
               </div>
             ` : ''}
 
             <div class="text-xs space-y-1.5 text-slate-600">
-               <div class="flex gap-2 items-center"><i data-lucide="phone" class="w-3.5 h-3.5"></i> ${c.contact}</div>
-               <div class="flex gap-2 items-center font-mono"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> ${c.gst || 'No GST'}</div>
-               <div class="flex gap-2 items-start"><i data-lucide="map-pin" class="w-3.5 h-3.5 mt-0.5"></i> <span>${c.address}</span></div>
+               <div class="flex gap-2 items-center"><i data-lucide="phone" class="w-3.5 h-3.5 text-indigo-500"></i> ${c.contact}</div>
+               ${c.alt_contact ? `<div class="flex gap-2 items-center"><i data-lucide="phone-call" class="w-3.5 h-3.5 text-indigo-500"></i> ${c.alt_contact} <span class="text-[10px] text-slate-400">(Alt)</span></div>` : ''}
+               <div class="flex gap-2 items-center font-mono"><i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-400"></i> ${c.gst || 'No GST'}</div>
+               <div class="flex gap-2 items-start"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-400 mt-0.5"></i> <span>${c.address}</span></div>
             </div>
           </div>
           
           <div class="pt-3 border-t flex justify-end gap-2">
-            <button onclick="window.editCustomer('${c.id}')" class="px-2.5 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 rounded-lg">Edit</button>
-            <button onclick="window.deleteCustomer('${c.id}')" class="px-2.5 py-1.5 text-xs font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg">Delete</button>
+            <button onclick="window.editCustomer('${c.id}')" class="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg">Edit</button>
+            <button onclick="window.deleteCustomer('${c.id}')" class="px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg">Delete</button>
           </div>
         </article>
       `).join('');
@@ -516,19 +502,48 @@
     document.getElementById('searchInput').addEventListener('input', render);
     document.getElementById('priorityFilter').addEventListener('change', render);
 
-    // --- 5. CUSTOMER CRUD ---
+    // PHOTO UPLOAD LOGIC
+    let base64Photo = '';
+    function handlePhoto(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 600;
+          let w = img.width, h = img.height;
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; } else { w = Math.round(w * MAX / h); h = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          base64Photo = canvas.toDataURL('image/jpeg', 0.7);
+          
+          document.getElementById('photoPreview').innerHTML = `<img src="${base64Photo}" class="w-full h-full object-cover" />`;
+          document.getElementById('fieldPhotoUrl').value = base64Photo;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    document.getElementById('photoCamera').addEventListener('change', (e) => handlePhoto(e.target.files[0]));
+    document.getElementById('photoUpload').addEventListener('change', (e) => handlePhoto(e.target.files[0]));
+
+    // CRUD LOGIC
     const customerModal = document.getElementById('customerModal');
-    
     window.closeCustomerModal = () => customerModal.classList.add('hidden');
     
     document.getElementById('addCustomerBtn').addEventListener('click', () => {
       if (userProfile.plan === 'free' && customers.length >= freeLimit) {
-        alert(`You have reached your free limit of ${freeLimit} customers. Please upgrade to Premium.`);
+        alert(`You have reached your free limit of ${freeLimit} customers. Please upgrade.`);
         document.getElementById('upgradeModal').classList.remove('hidden');
         return;
       }
       document.getElementById('customerForm').reset();
       document.getElementById('customerId').value = '';
+      document.getElementById('fieldPhotoUrl').value = '';
+      base64Photo = '';
+      document.getElementById('photoPreview').innerHTML = '<i data-lucide="camera" class="w-6 h-6 text-slate-400"></i>';
+      lucide.createIcons();
       document.getElementById('modalTitle').textContent = 'Add Customer';
       customerModal.classList.remove('hidden');
     });
@@ -545,6 +560,7 @@
         user_id: currentUser.id,
         name: document.getElementById('fieldName').value.trim(),
         contact: document.getElementById('fieldContact').value.trim(),
+        alt_contact: document.getElementById('fieldAltContact').value.trim(),
         gst: document.getElementById('fieldGst').value.trim().toUpperCase(),
         currently_using: document.getElementById('fieldUsing').value.trim(),
         model: document.getElementById('fieldModel').value.trim(),
@@ -553,7 +569,8 @@
         priority: document.getElementById('fieldPriority').value,
         has_requirement: isReq,
         requirement_item: isReq ? document.getElementById('fieldRequirementItem').value.trim() : '',
-        remark: document.getElementById('fieldRemark').value.trim()
+        remark: document.getElementById('fieldRemark').value.trim(),
+        photo_url: document.getElementById('fieldPhotoUrl').value || null
       };
 
       try {
@@ -580,6 +597,7 @@
       document.getElementById('customerId').value = c.id;
       document.getElementById('fieldName').value = c.name;
       document.getElementById('fieldContact').value = c.contact;
+      document.getElementById('fieldAltContact').value = c.alt_contact || '';
       document.getElementById('fieldGst').value = c.gst || '';
       document.getElementById('fieldUsing').value = c.currently_using;
       document.getElementById('fieldModel').value = c.model || '';
@@ -589,6 +607,15 @@
       document.getElementById('fieldRequirement').value = c.has_requirement ? 'yes' : 'no';
       document.getElementById('fieldRequirementItem').value = c.requirement_item || '';
       document.getElementById('fieldRemark').value = c.remark || '';
+      
+      if (c.photo_url) {
+        document.getElementById('fieldPhotoUrl').value = c.photo_url;
+        document.getElementById('photoPreview').innerHTML = `<img src="${c.photo_url}" class="w-full h-full object-cover" />`;
+      } else {
+        document.getElementById('fieldPhotoUrl').value = '';
+        document.getElementById('photoPreview').innerHTML = '<i data-lucide="camera" class="w-6 h-6 text-slate-400"></i>';
+      }
+      lucide.createIcons();
       
       document.getElementById('modalTitle').textContent = 'Edit Customer';
       customerModal.classList.remove('hidden');
@@ -601,7 +628,21 @@
       }
     };
 
-    // --- 6. UPGRADE & PAYMENT ---
+    // Export CSV Logic
+    document.getElementById('exportCsvBtn').addEventListener('click', () => {
+      if (customers.length === 0) return alert('No records to export');
+      const headers = ['Name', 'Contact', 'Alt Contact', 'GST', 'Machine', 'Model', 'HP', 'Address', 'Priority', 'Requirement', 'Remark'];
+      const rows = customers.map(c => [c.name, c.contact, c.alt_contact||'', c.gst, c.currently_using, c.model, c.hp, c.address, c.priority, c.has_requirement ? 'Yes' : 'No', c.remark]);
+      const csvContent = [headers.join(','), ...rows.map(r => r.map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `customers_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    });
+
+    // Upgrade Payment Logic
     const upgradeModal = document.getElementById('upgradeModal');
     window.closeUpgradeModal = () => upgradeModal.classList.add('hidden');
     
@@ -624,10 +665,7 @@
         const fileExt = file.name.split('.').pop();
         const fileName = `${currentUser.id}_${Date.now()}.${fileExt}`;
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('screenshots')
-          .upload(fileName, file);
-
+        const { error: uploadError } = await supabase.storage.from('screenshots').upload(fileName, file);
         if (uploadError) throw new Error("Upload failed: " + uploadError.message);
 
         const { data: urlData } = supabase.storage.from('screenshots').getPublicUrl(fileName);
@@ -656,9 +694,13 @@
       }
     });
 
-    // --- START ---
-    checkSession();
+    // Image Modal Logic
+    window.viewImage = (url) => {
+      document.getElementById('modalImage').src = url;
+      document.getElementById('imageModal').classList.remove('hidden');
+    };
 
+    checkSession();
   </script>
 </body>
 </html>
