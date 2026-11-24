@@ -135,20 +135,31 @@
       btn.disabled = true; btn.textContent = 'Authenticating...';
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        // 1. Login
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+        if (authError) throw new Error("Login Failed: " + authError.message);
         
-        // Verify Owner Role
-        const { data: profile, error: profError } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
-        if (profError || !profile || profile.role !== 'owner') {
-          await supabase.auth.signOut();
-          throw new Error('Access Denied. You are not the owner.');
+        // 2. Fetch Profile
+        const { data: profileData, error: profError } = await supabase.from('profiles').select('*').eq('id', authData.user.id).maybeSingle();
+        
+        if (profError) {
+          throw new Error("DB Error: " + profError.message);
+        }
+        
+        if (!profileData) {
+          throw new Error("Profile not found in database for ID: " + authData.user.id);
         }
 
-        currentUser = data.user;
+        if (profileData.role !== 'owner') {
+          throw new Error("Your role is '" + profileData.role + "', not 'owner'.");
+        }
+
+        // Success
+        currentUser = authData.user;
         document.getElementById('authScreen').classList.add('hidden');
         document.getElementById('mainApp').classList.remove('hidden');
         loadDashboard();
+        
       } catch (error) {
         errEl.textContent = error.message;
         errEl.classList.remove('hidden');
@@ -197,7 +208,7 @@
       list.innerHTML = data.map(p => `
         <div class="border border-amber-200 bg-amber-50/50 rounded-lg p-3 space-y-2 text-sm">
           <div class="flex justify-between font-bold">
-            <span class="truncate pr-2">${p.profiles.email}</span>
+            <span class="truncate pr-2">${p.profiles?.email || 'Unknown User'}</span>
             <span class="text-emerald-700">₹${p.amount}</span>
           </div>
           <div class="text-xs text-slate-600">UTR: <span class="font-mono bg-white px-1 rounded border">${p.utr}</span></div>
