@@ -140,7 +140,8 @@
         if (authError) throw new Error("Login Failed: " + authError.message);
         
         // 2. Fetch Profile
-        const { data: profileData, error: profError } = await supabase.from('profiles').select('*').eq('id', authData.user.id).maybeSingle();
+       await new Promise(resolve => setTimeout(resolve, 1000)); // Supabase ko 1 second ka time dein
+const { data: profileData, error: profError } = await supabase.from('profiles').select('*').eq('id', authData.user.id).maybeSingle();
         
         if (profError) {
           throw new Error("DB Error: " + profError.message);
